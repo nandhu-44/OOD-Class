@@ -24,6 +24,13 @@ def parse_args():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=5e-4)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--multi-gpu",
+        type=str,
+        default="auto",
+        choices=["auto", "on", "off"],
+        help="Use DataParallel across all visible GPUs.",
+    )
     return parser.parse_args()
 
 
@@ -60,6 +67,13 @@ def main():
     )
 
     model = CIFARResNet18(num_classes=10).to(device)
+
+    gpu_count = torch.cuda.device_count() if device.type == "cuda" else 0
+    use_multi_gpu = (args.multi_gpu == "on") or (args.multi_gpu == "auto" and gpu_count > 1)
+    if use_multi_gpu and gpu_count > 1:
+        print(f"Using DataParallel on {gpu_count} GPUs")
+        model = torch.nn.DataParallel(model)
+
     criterion = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
@@ -93,9 +107,14 @@ def main():
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             best_epoch = epoch + 1
+            best_state_dict = (
+                model.module.state_dict()
+                if isinstance(model, torch.nn.DataParallel)
+                else model.state_dict()
+            )
             torch.save(
                 {
-                    "model_state_dict": model.state_dict(),
+                    "model_state_dict": best_state_dict,
                     "test_accuracy": best_test_acc,
                     "epoch": best_epoch,
                     "seed": args.seed,
@@ -106,10 +125,12 @@ def main():
     final_test_acc = evaluate(model, test_loader, device)
     print(f"Final CIFAR-10 test accuracy: {final_test_acc:.4f}")
 
+    base_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+
     model_path = args.output_dir / "resnet18_cifar10.pt"
     torch.save(
         {
-            "model_state_dict": model.state_dict(),
+            "model_state_dict": base_model.state_dict(),
             "test_accuracy": final_test_acc,
             "epoch": args.epochs,
             "seed": args.seed,
