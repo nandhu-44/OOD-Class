@@ -1,0 +1,12 @@
+{
+  "model_path": "outputs/models/resnet18_cifar10.pt",
+  "best_model_path": "outputs/models/resnet18_cifar10_best.pt",
+  "test_accuracy": 0.8759,
+  "best_test_accuracy": 0.8886,
+  "best_epoch": 28,
+  "epochs": 30,
+  "batch_size": 512,
+  "lr": 0.001,
+  "weight_decay": 0.0005,
+  "seed": 42
+}
