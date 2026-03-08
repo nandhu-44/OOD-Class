@@ -76,6 +76,32 @@ python scripts/score_ood.py --data-root data --model-path outputs/models/resnet1
 python scripts/evaluate.py --score-dir outputs/scores --result-dir outputs/results
 ```
 
+## Web Demo
+
+Launch an interactive local web UI to upload an image and inspect:
+
+- CIFAR-10 class probabilities
+- MSP score
+- Energy score
+- Mahalanobis score
+
+```bash
+python scripts/web_demo.py --model-path outputs/models/resnet18_cifar10_best.pt --mahal-stats-path outputs/scores/mahalanobis_stats.npz
+```
+
+Then open `http://127.0.0.1:7860` in your browser.
+
+Optional flags:
+
+```bash
+python scripts/web_demo.py --model-path outputs/models/resnet18_cifar10_best.pt --score-dir outputs/scores --decision-method MSP --temperature 10.0
+```
+
+Notes:
+
+- If `outputs/scores/*.npz` exists, the demo uses calibrated per-method thresholds and displays ID-like vs OOD-like decisions.
+- If `mahalanobis_stats.npz` is missing, it is fit automatically from CIFAR-10 train data and then cached.
+
 ## Notes
 
 - All dataset loaders use `download=True`, so data is automatically fetched when not already available.
