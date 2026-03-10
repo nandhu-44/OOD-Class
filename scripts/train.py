@@ -13,14 +13,16 @@ from src.data import get_cifar10_loaders, unpack_batch
 from src.model import CIFARResNet18
 from src.utils import ensure_dir, get_device, save_json, set_seed
 
+from datetime import date
+today = date.today()
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train CIFAR-10 classifier")
     parser.add_argument("--data-root", type=Path, default=Path("data"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/models"))
-    parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--output-dir", type=Path, default=Path(f"outputs/models_{today}"))
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--num-workers", type=int, default=128)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=5e-4)
     parser.add_argument("--seed", type=int, default=42)
